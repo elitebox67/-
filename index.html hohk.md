@@ -1,0 +1,222 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>ELITE GIFTS | Supreme Boutique</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>  
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">  
+    <style>  
+        :root { --gold: #D4AF37; --neon-green: #39FF14; --neon-pink: #FF007F; }  
+        body { font-family: 'Outfit', sans-serif; background: #050505; color: white; scroll-behavior: smooth; }  
+        .font-brand { font-family: 'Syncopate', sans-serif; }  
+        .bg-mesh {  
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;  
+            background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),  
+                        radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.05) 0%, transparent 40%);  
+        }  
+        .supreme-card {  
+            background: rgba(255, 255, 255, 0.02);  
+            border: 1px solid rgba(255, 255, 255, 0.08);  
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);  
+            position: relative; overflow: hidden;  
+        }  
+        .supreme-card:hover {  
+            transform: translateY(-15px);  
+            background: rgba(255, 255, 255, 0.05);  
+            border-color: var(--gold);  
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);  
+        }  
+        .img-zoom { transition: transform 1.2s ease; }  
+        .supreme-card:hover .img-zoom { transform: scale(1.1); }  
+        .hidden-item { display: none; }  
+        .modal-enter { animation: modalSlide 0.5s forwards; }  
+        @keyframes modalSlide { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }  
+    </style>  
+</head>  
+<body class="overflow-x-hidden">  
+    <div class="bg-mesh"></div>  
+  
+    <nav class="fixed top-0 w-full z-[100] bg-black/80 backdrop-blur-xl px-10 py-6 flex justify-between items-center border-b border-white/5">  
+        <div class="font-brand text-2xl tracking-tighter uppercase italic text-white">ELITE<span class="text-[#D4AF37]">.</span>GIFTS</div>  
+          
+        <div class="hidden lg:flex space-x-12 text-[10px] font-bold uppercase tracking-[0.4em]">  
+            <button onclick="filterItems('all')" class="hover:text-white transition">All</button>  
+            <button onclick="filterItems('flowers')" class="hover:text-[#D4AF37] transition">Flowers</button>  
+            <button onclick="filterItems('snacks')" class="hover:text-[#39FF14] transition">Snacks</button>  
+            <button onclick="filterItems('lashes')" class="hover:text-[#FF007F] transition">Lashes</button>  
+        </div>  
+  
+        <button onclick="toggleCart()" class="relative bg-white/5 px-6 py-2 rounded-full border border-white/10 hover:border-[#D4AF37] transition">  
+            <span class="text-xs font-black uppercase tracking-widest">BOX (<span id="cartCount">0</span>)</span>  
+        </button>  
+    </nav>  
+  
+    <div id="sideCart" class="fixed top-0 right-0 h-full w-full md:w-[480px] bg-[#080808] z-[200] translate-x-full transition-transform duration-700 flex flex-col border-l border-white/10 shadow-2xl">  
+        <div class="p-10 border-b border-white/5 flex justify-between items-center">  
+            <h2 class="font-brand text-sm tracking-[0.3em] text-[#D4AF37]">BOX SUMMARY</h2>  
+            <button onclick="toggleCart()" class="text-3xl font-light">&times;</button>  
+        </div>  
+        <div id="cartItems" class="flex-grow p-10 overflow-y-auto space-y-6">  
+            <p class="text-gray-600 italic text-center py-20">Your elite collection is currently empty.</p>  
+        </div>  
+        <div class="p-10 bg-black/50 border-t border-white/5">  
+            <div class="flex justify-between items-end mb-8">  
+                <span class="text-xs uppercase tracking-[0.4em] text-gray-500 font-bold">Total Investment</span>  
+                <span id="totalPrice" class="text-4xl font-black text-[#D4AF37] italic leading-none">Rs 0</span>  
+            </div>  
+            <button onclick="openCheckout()" class="w-full bg-[#D4AF37] text-black py-6 rounded-2xl font-black text-sm uppercase tracking-[0.3em] hover:bg-white transition-all shadow-2xl">Confirm Order Details</button>  
+        </div>  
+    </div>  
+  
+    <div id="checkoutModal" class="fixed inset-0 z-[300] bg-black/95 backdrop-blur-2xl flex items-center justify-center opacity-0 invisible transition-all duration-300">  
+        <div id="modalContent" class="w-full max-w-2xl p-12 bg-[#0d0d0d] border border-white/10 rounded-[3rem] relative shadow-2xl">  
+            <button onclick="closeCheckout()" class="absolute top-8 right-8 text-3xl">&times;</button>  
+              
+            <div id="orderFormArea">  
+                <h2 class="font-brand text-2xl text-[#D4AF37] mb-2 uppercase tracking-tighter italic">Checkout</h2>  
+                <p class="text-gray-500 mb-10 text-sm tracking-widest uppercase italic text-center">Your elite selection is one step away</p>  
+                  
+                <form id="orderForm" action="https://formspree.io/f/ahmedshafqaat804@gmail.com" method="POST" class="space-y-6" onsubmit="finalizeOrder(event)">  
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">  
+                        <input required name="Customer_Name" type="text" placeholder="Full Name" class="bg-white/5 border border-white/10 rounded-2xl p-5 outline-none focus:border-[#D4AF37] transition text-white">  
+                        <input required name="Phone_Number" type="tel" placeholder="Mobile Number" class="bg-white/5 border border-white/10 rounded-2xl p-5 outline-none focus:border-[#D4AF37] transition text-white">  
+                    </div>  
+                    <textarea required name="Delivery_Address" placeholder="Full Street Address & City" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 h-32 outline-none focus:border-[#D4AF37] transition text-white"></textarea>  
+                      
+                    <input type="hidden" name="Order_ID" id="hiddenOrderID">  
+                    <input type="hidden" name="Total_Bill" id="hiddenTotal">  
+                    <input type="hidden" name="Purchased_Items" id="hiddenItems">  
+  
+                    <div class="p-6 bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-2xl flex items-center justify-between">  
+                        <span class="text-xs font-black uppercase tracking-widest text-[#D4AF37]">Payment Mode</span>  
+                        <span class="text-sm font-bold italic">Cash On Delivery</span>  
+                    </div>  
+  
+                    <button type="submit" class="w-full bg-white text-black py-6 rounded-2xl font-black text-sm uppercase tracking-[0.3em] hover:bg-[#D4AF37] transition-all">Confirm Order</button>  
+                </form>  
+            </div>  
+        </div>  
+    </div>  
+  
+    <main class="max-w-[1500px] mx-auto px-10 py-40">  
+          
+        <section id="flowers" class="category-section mb-40">  
+            <h2 class="font-brand text-3xl uppercase italic mb-10 text-[#D4AF37]">Flora</h2>  
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">  
+                <div class="supreme-card rounded-[3rem] p-6 group">  
+                    <div class="h-96 rounded-[2.5rem] overflow-hidden mb-8">  
+                        <img src="https://images.unsplash.com/photo-1591886129985-50b2ed136f36?q=80&w=800" class="img-zoom w-full h-full object-cover grayscale group-hover:grayscale-0">  
+                    </div>  
+                    <h3 class="text-2xl font-bold uppercase">Velvet Red Roses</h3>  
+                    <div class="flex justify-between items-center mt-6">  
+                        <span class="text-3xl font-black italic">Rs 5,500</span>  
+                        <button onclick="addItem('Red Roses', 5500, 'gold')" class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-2xl group-hover:bg-[#D4AF37] group-hover:text-black transition-all">+</button>  
+                    </div>  
+                </div>  
+            </div>  
+        </section>  
+  
+        <section id="snacks" class="category-section mb-40">  
+            <h2 class="font-brand text-3xl uppercase italic mb-10 text-[#39FF14]">Snacks</h2>  
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">  
+                <div class="supreme-card rounded-[3rem] p-6 group">  
+                    <div class="h-80 rounded-[2.5rem] overflow-hidden mb-8">  
+                        <img src="https://images.unsplash.com/photo-1599599810769-bcde5a160d32?q=80&w=600" class="img-zoom w-full h-full object-cover">  
+                    </div>  
+                    <h3 class="text-xl font-bold uppercase">Artisan Wafers</h3>  
+                    <div class="flex justify-between items-center mt-6">  
+                        <span class="text-2xl font-black italic">Rs 450</span>  
+                        <button onclick="addItem('Wafers', 450, 'green')" class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-2xl group-hover:bg-[#39FF14] group-hover:text-black transition-all">+</button>  
+                    </div>  
+                </div>  
+            </div>  
+        </section>  
+  
+    </main>  
+  
+    <script>  
+        let cart = [];  
+        let total = 0;  
+  
+        function filterItems(cat) {  
+            const sections = document.querySelectorAll('.category-section');  
+            sections.forEach(s => {  
+                if(cat === 'all') s.classList.remove('hidden-item');  
+                else if(s.id === cat) s.classList.remove('hidden-item');  
+                else s.classList.add('hidden-item');  
+            });  
+        }  
+  
+        function toggleCart() { document.getElementById('sideCart').classList.toggle('translate-x-full'); }  
+        function openCheckout() {  
+            if(cart.length === 0) return alert("Select items first.");  
+            document.getElementById('checkoutModal').classList.remove('invisible', 'opacity-0');  
+        }  
+        function closeCheckout() { document.getElementById('checkoutModal').classList.add('invisible', 'opacity-0'); }  
+  
+        function addItem(name, price, type) {  
+            cart.push({name, price});  
+            total += price;  
+            updateUI();  
+            confetti({ particleCount: 40, spread: 50, colors: ['#D4AF37'] });  
+            if(cart.length === 1) toggleCart();  
+        }  
+  
+        function updateUI() {  
+            document.getElementById('cartCount').innerText = cart.length;  
+            document.getElementById('totalPrice').innerText = `Rs ${total.toLocaleString()}`;  
+            const container = document.getElementById('cartItems');  
+            container.innerHTML = cart.map((item, index) => `  
+                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl border border-white/5">  
+                    <span class="text-sm font-bold uppercase">${item.name}</span>  
+                    <button onclick="removeItem(${index})" class="text-red-500 font-black">X</button>  
+                </div>  
+            `).join('');  
+        }  
+  
+        function removeItem(index) {  
+            total -= cart[index].price;  
+            cart.splice(index, 1);  
+            updateUI();  
+        }  
+  
+        async function finalizeOrder(e) {  
+            e.preventDefault();  
+            const orderID = "ELT-" + Math.floor(Math.random() * 90000 + 10000);  
+              
+            document.getElementById('hiddenOrderID').value = orderID;  
+            document.getElementById('hiddenTotal').value = `Rs ${total.toLocaleString()}`;  
+            document.getElementById('hiddenItems').value = cart.map(i => i.name).join(', ');  
+  
+            const form = e.target;  
+            const data = new FormData(form);  
+  
+            // SEND EMAIL  
+            fetch(form.action, {  
+                method: 'POST',  
+                body: data,  
+                headers: { 'Accept': 'application/json' }  
+            });  
+  
+            // SUCCESS INTERFACE (NO CALL INFO)  
+            document.getElementById('modalContent').innerHTML = `  
+                <div class="text-center py-10">  
+                    <div class="w-24 h-24 bg-[#D4AF37] rounded-full flex items-center justify-center mx-auto mb-8">  
+                        <span class="text-black text-5xl font-black">✓</span>  
+                    </div>  
+                    <h2 class="font-brand text-3xl text-[#D4AF37] mb-2 uppercase italic">Reserved</h2>  
+                    <p class="text-xl font-bold mb-8 text-white">ID: ${orderID}</p>  
+                    <div class="bg-white/5 p-8 rounded-[2rem] border border-white/10 mb-8 max-w-md mx-auto">  
+                        <p class="text-sm text-gray-400 italic">Your order has been recorded in our luxury suite.</p>  
+                        <p class="text-[#D4AF37] font-black uppercase tracking-widest mt-4">Elite Choice.</p>  
+                    </div>  
+                    <button onclick="location.reload()" class="text-[#D4AF37] font-bold underline underline-offset-8 uppercase text-xs">Return Boutique</button>  
+                </div>  
+            `;  
+            confetti({ particleCount: 200, spread: 100 });  
+        }  
+    </script>  
+</body>  
+</html>  
